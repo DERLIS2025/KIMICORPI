@@ -1,18 +1,19 @@
 import { useEffect, type ReactNode } from 'react';
-import { adminAuthService } from '@/services/admin-auth.service';
 import { useNavigate } from '@/app/router';
+import { useAuth } from '@/providers/AuthProvider';
 
 export function RequireAdminAuth({ children }: { children: ReactNode }) {
   const navigate = useNavigate();
-  const isAuthed = adminAuthService.isAuthenticated();
+  const { user, loading } = useAuth();
+  const isAuthed = Boolean(user);
 
   useEffect(() => {
-    if (!isAuthed) {
+    if (!loading && !isAuthed) {
       navigate('/admin/login');
     }
-  }, [isAuthed, navigate]);
+  }, [isAuthed, loading, navigate]);
 
-  if (!isAuthed) return null;
+  if (loading || !isAuthed) return null;
 
   return <>{children}</>;
 }

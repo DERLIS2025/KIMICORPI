@@ -1,11 +1,16 @@
 import { BudgetProvider } from '@/providers/BudgetProvider';
+import { AuthProvider } from '@/providers/AuthProvider';
 import { AppRouter } from '@/app/router';
+import { Toaster } from '@/components/ui/sonner';
 
 function App() {
   return (
-    <BudgetProvider>
-      <AppRouter />
-    </BudgetProvider>
+    <AuthProvider>
+      <BudgetProvider>
+        <AppRouter />
+        <Toaster richColors />
+      </BudgetProvider>
+    </AuthProvider>
   );
 }
 

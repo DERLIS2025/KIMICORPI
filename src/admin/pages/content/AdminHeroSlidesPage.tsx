@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import type { HeroSlide } from '@/domains/marketing/types/marketing.types';
 import { marketingService } from '@/domains/marketing/services/marketing.service';
+import { toast } from 'sonner';
 
 const initialForm: Partial<HeroSlide> = {
   title: '',
@@ -20,7 +21,13 @@ export function AdminHeroSlidesPage() {
   const [form, setForm] = useState<Partial<HeroSlide>>(initialForm);
   const [editingId, setEditingId] = useState<string | null>(null);
 
-  const load = async () => setItems(await marketingService.getHeroSlidesAdmin());
+  const load = async () => {
+    try {
+      setItems(await marketingService.getHeroSlidesAdmin());
+    } catch (e) {
+      toast.error(e instanceof Error ? e.message : 'Error cargando slides');
+    }
+  };
 
   useEffect(() => {
     void load();
@@ -29,15 +36,21 @@ export function AdminHeroSlidesPage() {
   const onSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    if (editingId) {
-      await marketingService.updateHeroSlide(editingId, form);
-      setEditingId(null);
-    } else {
-      await marketingService.createHeroSlide(form);
-    }
+    try {
+      if (editingId) {
+        await marketingService.updateHeroSlide(editingId, form);
+        setEditingId(null);
+        toast.success('Cambios guardados');
+      } else {
+        await marketingService.createHeroSlide(form);
+        toast.success('Creado correctamente');
+      }
 
-    setForm(initialForm);
-    await load();
+      setForm(initialForm);
+      await load();
+    } catch (e) {
+      toast.error(e instanceof Error ? e.message : 'Error guardando slide');
+    }
   };
 
   return (
@@ -70,12 +83,12 @@ export function AdminHeroSlidesPage() {
               </div>
               <div className="flex flex-wrap gap-2">
                 <button onClick={() => { setEditingId(item.id); setForm(item); }} className="rounded border px-3 py-1 text-sm">Editar</button>
-                <button onClick={() => void marketingService.updateHeroSlide(item.id, { active: !item.active }).then(load)} className="rounded border px-3 py-1 text-sm">
+                <button onClick={() => void marketingService.updateHeroSlide(item.id, { active: !item.active }).then(() => { toast.success('Cambios guardados'); return load(); }).catch((e) => { toast.error(e instanceof Error ? e.message : 'Error guardando cambios'); })} className="rounded border px-3 py-1 text-sm">
                   {item.active ? 'Desactivar' : 'Activar'}
                 </button>
-                <button onClick={() => void marketingService.updateHeroSlide(item.id, { sortOrder: (item.sortOrder || 0) - 1 }).then(load)} className="rounded border px-3 py-1 text-sm">↑</button>
-                <button onClick={() => void marketingService.updateHeroSlide(item.id, { sortOrder: (item.sortOrder || 0) + 1 }).then(load)} className="rounded border px-3 py-1 text-sm">↓</button>
-                <button onClick={() => void marketingService.deleteHeroSlide(item.id).then(load)} className="rounded border px-3 py-1 text-sm text-red-600">Eliminar</button>
+                <button onClick={() => void marketingService.updateHeroSlide(item.id, { sortOrder: (item.sortOrder || 0) - 1 }).then(() => { toast.success('Cambios guardados'); return load(); }).catch((e) => { toast.error(e instanceof Error ? e.message : 'Error guardando cambios'); })} className="rounded border px-3 py-1 text-sm">↑</button>
+                <button onClick={() => void marketingService.updateHeroSlide(item.id, { sortOrder: (item.sortOrder || 0) + 1 }).then(() => { toast.success('Cambios guardados'); return load(); }).catch((e) => { toast.error(e instanceof Error ? e.message : 'Error guardando cambios'); })} className="rounded border px-3 py-1 text-sm">↓</button>
+                <button onClick={() => void marketingService.deleteHeroSlide(item.id).then(() => { toast.success('Eliminado correctamente'); return load(); }).catch((e) => { toast.error(e instanceof Error ? e.message : 'Error eliminando slide'); })} className="rounded border px-3 py-1 text-sm text-red-600">Eliminar</button>
               </div>
             </div>
           </div>

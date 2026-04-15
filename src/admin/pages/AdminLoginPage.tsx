@@ -1,10 +1,11 @@
 import { useState } from 'react';
 import { ShieldCheck } from 'lucide-react';
 import { useNavigate } from '@/app/router';
-import { adminAuthService } from '@/services/admin-auth.service';
+import { useAuth } from '@/providers/AuthProvider';
 
 export function AdminLoginPage() {
   const navigate = useNavigate();
+  const { signIn } = useAuth();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
@@ -18,7 +19,7 @@ export function AdminLoginPage() {
     setError('');
 
     try {
-      await adminAuthService.login(email, password);
+      await signIn(email, password);
       navigate('/admin');
     } catch (e) {
       setError(e instanceof Error ? e.message : 'No se pudo iniciar sesión');

@@ -1,14 +1,15 @@
 import type { ReactNode } from 'react';
 import { Shield, LogOut } from 'lucide-react';
 import { useLocation, useNavigate } from '@/app/router';
-import { adminAuthService } from '@/services/admin-auth.service';
+import { useAuth } from '@/providers/AuthProvider';
 
 export function AdminLayout({ children }: { children: ReactNode }) {
   const navigate = useNavigate();
   const { pathname } = useLocation();
+  const { signOut, user } = useAuth();
 
   const handleLogout = async () => {
-    await adminAuthService.logout();
+    await signOut();
     navigate('/admin/login');
   };
 
@@ -30,6 +31,9 @@ export function AdminLayout({ children }: { children: ReactNode }) {
           <div className="flex items-center gap-2 text-slate-800">
             <Shield className="h-5 w-5" />
             <span className="font-semibold">Admin Corpi & Cia</span>
+            {user?.email && (
+              <span className="text-xs text-slate-500">({user.email})</span>
+            )}
           </div>
           <button onClick={handleLogout} className="inline-flex items-center gap-2 rounded-lg border px-3 py-2 text-sm hover:bg-slate-100">
             <LogOut className="h-4 w-4" />
