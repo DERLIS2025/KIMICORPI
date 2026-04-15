@@ -2,16 +2,24 @@ import { useState } from 'react';
 import { Mail, Send } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
+import { leadsService } from '@/domains/leads/services/leads.service';
 
 export function Newsletter() {
   const [email, setEmail] = useState('');
   const [submitted, setSubmitted] = useState(false);
+  const [error, setError] = useState('');
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (email) {
+    if (!email) return;
+
+    try {
+      await leadsService.subscribeNewsletter(email);
       setSubmitted(true);
       setEmail('');
+      setError('');
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'No se pudo registrar el email');
     }
   };
 
@@ -22,11 +30,9 @@ export function Newsletter() {
           <div className="w-16 h-16 bg-white/20 rounded-2xl flex items-center justify-center mx-auto mb-6">
             <Mail className="w-8 h-8 text-white" />
           </div>
-          
-          <h2 className="text-3xl sm:text-4xl font-bold text-white mb-4">
-            Recibí novedades
-          </h2>
-          
+
+          <h2 className="text-3xl sm:text-4xl font-bold text-white mb-4">Recibí novedades</h2>
+
           <p className="text-green-100 mb-8">
             Suscribite para recibir ofertas, nuevos productos y recomendaciones para tu jardín directamente en tu correo.
           </p>
@@ -49,14 +55,13 @@ export function Newsletter() {
                 className="flex-1 bg-white border-0 h-12 text-gray-900 placeholder:text-gray-500"
                 required
               />
-              <Button 
-                type="submit"
-                className="bg-green-900 hover:bg-green-800 text-white h-12 px-8"
-              >
+              <Button type="submit" className="bg-green-900 hover:bg-green-800 text-white h-12 px-8">
                 Suscribirme
               </Button>
             </form>
           )}
+
+          {error && <p className="mt-4 text-sm text-red-100">{error}</p>}
         </div>
       </div>
     </section>
