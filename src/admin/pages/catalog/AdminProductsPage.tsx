@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useState } from 'react';
 import { catalogDataService } from '@/domains/catalog/services/catalog-data.service';
 import type { CategoryRow, ProductRow } from '@/domains/catalog/types/catalog.db.types';
+import { supabase } from '@/integrations/supabase/client';
 
 const initialForm = {
   category_id: '',
@@ -17,6 +18,7 @@ export function AdminProductsPage() {
   const [items, setItems] = useState<ProductRow[]>([]);
   const [categories, setCategories] = useState<CategoryRow[]>([]);
   const [form, setForm] = useState(initialForm);
+  const [imageFile, setImageFile] = useState<File | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
 
@@ -46,9 +48,39 @@ export function AdminProductsPage() {
 
   const onCreate = async (event: React.FormEvent) => {
     event.preventDefault();
-    await catalogDataService.createProduct(form);
-    setForm((prev) => ({ ...initialForm, category_id: prev.category_id }));
-    await load();
+
+    try {
+      let imageUrl = '';
+
+      // 🔥 subir imagen a supabase
+      if (imageFile) {
+        const fileName = `${Date.now()}-${imageFile.name}`;
+
+        const { error: uploadError } = await supabase.storage
+          .from('images')
+          .upload(fileName, imageFile);
+
+        if (uploadError) throw uploadError;
+
+        const { data: publicUrl } = supabase.storage
+          .from('images')
+          .getPublicUrl(fileName);
+
+        imageUrl = publicUrl.publicUrl;
+      }
+
+      await catalogDataService.createProduct({
+        ...form,
+        image_url: imageUrl,
+      });
+
+      setForm((prev) => ({ ...initialForm, category_id: prev.category_id }));
+      setImageFile(null);
+
+      await load();
+    } catch (e) {
+      setError(e instanceof Error ? e.message : 'Error creando producto');
+    }
   };
 
   const onDelete = async (id: string) => {
@@ -56,7 +88,9 @@ export function AdminProductsPage() {
     await load();
   };
 
-  const categoryNameById = Object.fromEntries(categories.map((category) => [category.id, category.name]));
+  const categoryNameById = Object.fromEntries(
+    categories.map((category) => [category.id, category.name])
+  );
 
   return (
     <section className="space-y-6">
@@ -65,24 +99,113 @@ export function AdminProductsPage() {
         <p className="text-slate-600">CRUD básico conectado a Supabase.</p>
       </header>
 
-      {error && <div className="rounded-lg border border-red-200 bg-red-50 px-4 py-2 text-sm text-red-700">{error}</div>}
+      {error && (
+        <div className="rounded-lg border border-red-200 bg-red-50 px-4 py-2 text-sm text-red-700">
+          {error}
+        </div>
+      )}
 
-      <form onSubmit={onCreate} className="grid gap-3 rounded-xl border bg-white p-4 md:grid-cols-4">
-        <select value={form.category_id} onChange={(e) => setForm((p) => ({ ...p, category_id: e.target.value }))} className="rounded border px-3 py-2" required>
-          {categories.map((category) => <option key={category.id} value={category.id}>{category.name}</option>)}
+      <form
+        onSubmit={onCreate}
+        className="grid gap-3 rounded-xl border bg-white p-4 md:grid-cols-4"
+      >
+        <select
+          value={form.category_id}
+          onChange={(e) =>
+            setForm((p) => ({ ...p, category_id: e.target.value }))
+          }
+          className="rounded border px-3 py-2"
+          required
+        >
+          {categories.map((category) => (
+            <option key={category.id} value={category.id}>
+              {category.name}
+            </option>
+          ))}
         </select>
-        <input value={form.slug} onChange={(e) => setForm((p) => ({ ...p, slug: e.target.value }))} placeholder="slug" className="rounded border px-3 py-2" required />
-        <input value={form.name} onChange={(e) => setForm((p) => ({ ...p, name: e.target.value }))} placeholder="nombre" className="rounded border px-3 py-2" required />
-        <input type="number" value={form.price} onChange={(e) => setForm((p) => ({ ...p, price: Number(e.target.value) }))} placeholder="precio" className="rounded border px-3 py-2" required />
-        <input value={form.description} onChange={(e) => setForm((p) => ({ ...p, description: e.target.value }))} placeholder="descripción" className="rounded border px-3 py-2 md:col-span-2" />
-        <input value={form.image_url} onChange={(e) => setForm((p) => ({ ...p, image_url: e.target.value }))} placeholder="url imagen" className="rounded border px-3 py-2" />
-        <select value={form.unit} onChange={(e) => setForm((p) => ({ ...p, unit: e.target.value as typeof form.unit }))} className="rounded border px-3 py-2">
+
+        <input
+          value={form.slug}
+          onChange={(e) =>
+            setForm((p) => ({ ...p, slug: e.target.value }))
+          }
+          placeholder="slug"
+          className="rounded border px-3 py-2"
+          required
+        />
+
+        <input
+          value={form.name}
+          onChange={(e) =>
+            setForm((p) => ({ ...p, name: e.target.value }))
+          }
+          placeholder="nombre"
+          className="rounded border px-3 py-2"
+          required
+        />
+
+        <input
+          type="number"
+          value={form.price}
+          onChange={(e) =>
+            setForm((p) => ({ ...p, price: Number(e.target.value) }))
+          }
+          placeholder="precio"
+          className="rounded border px-3 py-2"
+          required
+        />
+
+        <input
+          value={form.description}
+          onChange={(e) =>
+            setForm((p) => ({ ...p, description: e.target.value }))
+          }
+          placeholder="descripción"
+          className="rounded border px-3 py-2 md:col-span-2"
+        />
+
+        {/* 🔥 NUEVO INPUT DE IMAGEN */}
+        <input
+          type="file"
+          accept="image/*"
+          onChange={(e) => setImageFile(e.target.files?.[0] || null)}
+          className="rounded border px-3 py-2"
+        />
+
+        <select
+          value={form.unit}
+          onChange={(e) =>
+            setForm((p) => ({
+              ...p,
+              unit: e.target.value as typeof form.unit,
+            }))
+          }
+          className="rounded border px-3 py-2"
+        >
           <option value="unidad">unidad</option>
           <option value="m2">m2</option>
           <option value="kg">kg</option>
         </select>
-        <input type="number" value={form.min_quantity} onChange={(e) => setForm((p) => ({ ...p, min_quantity: Number(e.target.value) }))} placeholder="mínimo" className="rounded border px-3 py-2" />
-        <button type="submit" className="rounded bg-slate-900 px-4 py-2 text-white">Crear</button>
+
+        <input
+          type="number"
+          value={form.min_quantity}
+          onChange={(e) =>
+            setForm((p) => ({
+              ...p,
+              min_quantity: Number(e.target.value),
+            }))
+          }
+          placeholder="mínimo"
+          className="rounded border px-3 py-2"
+        />
+
+        <button
+          type="submit"
+          className="rounded bg-slate-900 px-4 py-2 text-white"
+        >
+          Crear
+        </button>
       </form>
 
       <div className="overflow-x-auto rounded-xl border bg-white">
@@ -98,16 +221,27 @@ export function AdminProductsPage() {
           </thead>
           <tbody>
             {loading ? (
-              <tr><td className="px-3 py-3" colSpan={5}>Cargando...</td></tr>
+              <tr>
+                <td className="px-3 py-3" colSpan={5}>
+                  Cargando...
+                </td>
+              </tr>
             ) : (
               items.map((item) => (
                 <tr key={item.id} className="border-t">
                   <td className="px-3 py-2">{item.name}</td>
-                  <td className="px-3 py-2">{categoryNameById[item.category_id] || '-'}</td>
+                  <td className="px-3 py-2">
+                    {categoryNameById[item.category_id] || '-'}
+                  </td>
                   <td className="px-3 py-2">{item.price}</td>
                   <td className="px-3 py-2">{item.unit}</td>
                   <td className="px-3 py-2">
-                    <button onClick={() => void onDelete(item.id)} className="rounded border px-2 py-1 text-red-600">Eliminar</button>
+                    <button
+                      onClick={() => void onDelete(item.id)}
+                      className="rounded border px-2 py-1 text-red-600"
+                    >
+                      Eliminar
+                    </button>
                   </td>
                 </tr>
               ))
