@@ -10,13 +10,19 @@ interface HeaderProps {
 }
 
 const defaultSettings: SiteSettings = {
+  siteName: 'CORPI & Cia',
+  logoUrl: '',
   whatsappNumber: '595992588770',
+  whatsappDefaultMessage: 'Hola Corpi & Cia, quiero solicitar un presupuesto.',
   phone: '+595 992 588 770',
   email: 'info@corpicia.com',
   city: 'Asunción, Paraguay',
+  address: 'Asunción, Paraguay',
   facebookUrl: 'https://facebook.com/corpi.jardin',
   instagramUrl: 'https://instagram.com/corpi_y_ciaa',
   freeShippingThreshold: 500000,
+  promoGeneral: '🚚 Envío gratis en compras mayores a Gs. 500.000',
+  reusableTexts: {},
   locale: 'es-PY',
   currency: 'PYG',
 };
@@ -71,19 +77,18 @@ export function Header({ currentView, onViewChange }: HeaderProps) {
   return (
     <>
       <div className="bg-[#0066b3] text-white text-center py-2 px-4 text-sm">
-        <span className="font-medium">🚚 Envío gratis en compras mayores a Gs. {settings.freeShippingThreshold.toLocaleString('es-PY')}</span>
+        <span className="font-medium">{settings.promoGeneral || `🚚 Envío gratis en compras mayores a Gs. ${settings.freeShippingThreshold.toLocaleString('es-PY')}`}</span>
       </div>
 
       <header className={`sticky top-0 z-50 bg-white transition-shadow duration-300 ${scrolled ? 'shadow-md' : ''}`}>
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex items-center justify-between h-16">
             <button onClick={() => onViewChange('home')} className="flex items-center gap-2 group">
-              <div className="w-10 h-10 bg-gradient-to-br from-green-500 to-green-700 rounded-lg flex items-center justify-center group-hover:scale-105 transition-transform">
-                <Leaf className="w-5 h-5 text-white" />
+              <div className="w-10 h-10 bg-gradient-to-br from-green-500 to-green-700 rounded-lg flex items-center justify-center group-hover:scale-105 transition-transform overflow-hidden">
+                {settings.logoUrl ? <img src={settings.logoUrl} alt={settings.siteName} className="h-full w-full object-cover" /> : <Leaf className="w-5 h-5 text-white" />}
               </div>
               <div className="flex flex-col">
-                <span className="text-xl font-bold text-gray-900 leading-tight">CORPI</span>
-                <span className="text-xs text-green-600 -mt-1">& Cia</span>
+                <span className="text-xl font-bold text-gray-900 leading-tight">{settings.siteName}</span>
               </div>
             </button>
 

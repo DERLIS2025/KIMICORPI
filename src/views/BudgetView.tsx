@@ -4,6 +4,7 @@ import { useBudget } from '@/providers/BudgetProvider';
 import { formatPrice } from '@/domains/catalog/utils/price';
 import { getStepByUnit, getUnitLabel } from '@/domains/catalog/utils/unit';
 import { settingsService, type SiteSettings } from '@/domains/settings/services/settings.service';
+import { leadsService } from '@/domains/leads/services/leads.service';
 
 interface BudgetViewProps {
   onViewChange: () => void;
@@ -14,13 +15,19 @@ export function BudgetView({ onViewChange }: BudgetViewProps) {
   const [showNotes, setShowNotes] = useState<string | null>(null);
   const [noteText, setNoteText] = useState('');
   const [settings, setSettings] = useState<SiteSettings>({
+    siteName: 'CORPI & Cia',
+    logoUrl: '',
     whatsappNumber: '595992588770',
+    whatsappDefaultMessage: 'Hola Corpi & Cia, quiero solicitar un presupuesto.',
     phone: '+595 992 588 770',
     email: 'info@corpicia.com',
     city: 'Asunción, Paraguay',
+    address: 'Asunción, Paraguay',
     facebookUrl: 'https://facebook.com/corpi.jardin',
     instagramUrl: 'https://instagram.com/corpi_y_ciaa',
     freeShippingThreshold: 500000,
+    promoGeneral: '🚚 Envío gratis en compras mayores a Gs. 500.000',
+    reusableTexts: {},
     locale: 'es-PY',
     currency: 'PYG',
   });
@@ -29,9 +36,18 @@ export function BudgetView({ onViewChange }: BudgetViewProps) {
     void settingsService.getSiteSettings().then(setSettings);
   }, []);
 
-  const handleSendWhatsApp = () => {
+  const handleSendWhatsApp = async () => {
+    const requestCode = await leadsService.createBudgetRequest({
+      items,
+      totalEstimated: estimatedTotal,
+    });
+
     const message = getWhatsAppMessage();
-    window.open(`https://wa.me/${settings.whatsappNumber}?text=${message}`, '_blank');
+    const prefix = settings.whatsappDefaultMessage ? `${settings.whatsappDefaultMessage}\n\n` : '';
+    const codeLine = requestCode ? `Código de solicitud: ${requestCode}\n\n` : '';
+    const finalMessage = encodeURIComponent(`${prefix}${codeLine}`) + message;
+
+    window.open(`https://wa.me/${settings.whatsappNumber}?text=${finalMessage}`, '_blank');
   };
 
   const handleAddNote = (productId: string) => {

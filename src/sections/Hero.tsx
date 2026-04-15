@@ -64,6 +64,10 @@ export function Hero({ onViewChange }: HeroProps) {
                 <span className="text-sm font-medium text-gray-700">Corpi & Cia - Jardinería Profesional</span>
               </div>
 
+              {slide.badge && (
+                <div className="inline-flex items-center gap-2 px-3 py-1.5 bg-green-100 text-green-800 rounded-full shadow-sm mb-4 text-sm font-medium">{slide.badge}</div>
+              )}
+
               <h1 className="text-4xl sm:text-5xl lg:text-6xl font-bold text-gray-900 mb-2">{slide.title}</h1>
               <p className={`text-2xl sm:text-3xl lg:text-4xl font-bold bg-gradient-to-r ${slide.color} bg-clip-text text-transparent mb-6`}>
                 {slide.subtitle}

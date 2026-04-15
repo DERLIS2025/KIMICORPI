@@ -11,6 +11,11 @@ import { AdminLayout } from '@/admin/layouts/AdminLayout';
 import { RequireAdminAuth } from '@/admin/guards/RequireAdminAuth';
 import { AdminProductsPage } from '@/admin/pages/catalog/AdminProductsPage';
 import { AdminCategoriesPage } from '@/admin/pages/catalog/AdminCategoriesPage';
+import { AdminHeroSlidesPage } from '@/admin/pages/content/AdminHeroSlidesPage';
+import { AdminBenefitsPage } from '@/admin/pages/content/AdminBenefitsPage';
+import { AdminSiteSettingsPage } from '@/admin/pages/content/AdminSiteSettingsPage';
+import { AdminBudgetsPage } from '@/admin/pages/leads/AdminBudgetsPage';
+import { AdminLeadsPage } from '@/admin/pages/leads/AdminLeadsPage';
 
 interface RouterContextType {
   pathname: string;
@@ -81,6 +86,11 @@ function AdminRoutes() {
         {pathname === appPaths.adminHome && <AdminDashboardPage />}
         {pathname === appPaths.adminProducts && <AdminProductsPage />}
         {pathname === appPaths.adminCategories && <AdminCategoriesPage />}
+        {pathname === appPaths.adminHeroSlides && <AdminHeroSlidesPage />}
+        {pathname === appPaths.adminBenefits && <AdminBenefitsPage />}
+        {pathname === appPaths.adminSiteSettings && <AdminSiteSettingsPage />}
+        {pathname === appPaths.adminBudgets && <AdminBudgetsPage />}
+        {pathname === appPaths.adminLeads && <AdminLeadsPage />}
       </AdminLayout>
     </RequireAdminAuth>
   );

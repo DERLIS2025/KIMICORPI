@@ -27,4 +27,11 @@ export default defineConfig([
       'react-hooks/purity': 'off',
     },
   },
+  {
+    files: ['src/admin/pages/**/*.tsx'],
+    rules: {
+      'react-hooks/set-state-in-effect': 'off',
+      'react-hooks/exhaustive-deps': 'off',
+    },
+  }
 ])

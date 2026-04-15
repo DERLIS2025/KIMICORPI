@@ -16,6 +16,11 @@ export function AdminLayout({ children }: { children: ReactNode }) {
     { label: 'Dashboard', to: '/admin' },
     { label: 'Productos', to: '/admin/products' },
     { label: 'Categorías', to: '/admin/categories' },
+    { label: 'Hero Slides', to: '/admin/hero-slides' },
+    { label: 'Benefits', to: '/admin/benefits' },
+    { label: 'Site Settings', to: '/admin/site-settings' },
+    { label: 'Budgets', to: '/admin/budgets' },
+    { label: 'Leads', to: '/admin/leads' },
   ];
 
   return (

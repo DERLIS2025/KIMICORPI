@@ -21,13 +21,19 @@ export function ProductView({ productSlug, onBack, onProductSelect }: ProductVie
   const { products, loading } = useCatalogData();
   const product = catalogService.getProductBySlug(products, productSlug);
   const [settings, setSettings] = useState<SiteSettings>({
+    siteName: 'CORPI & Cia',
+    logoUrl: '',
     whatsappNumber: '595992588770',
+    whatsappDefaultMessage: 'Hola Corpi & Cia, quiero solicitar un presupuesto.',
     phone: '+595 992 588 770',
     email: 'info@corpicia.com',
     city: 'Asunción, Paraguay',
+    address: 'Asunción, Paraguay',
     facebookUrl: 'https://facebook.com/corpi.jardin',
     instagramUrl: 'https://instagram.com/corpi_y_ciaa',
     freeShippingThreshold: 500000,
+    promoGeneral: '🚚 Envío gratis en compras mayores a Gs. 500.000',
+    reusableTexts: {},
     locale: 'es-PY',
     currency: 'PYG',
   });
@@ -80,7 +86,9 @@ export function ProductView({ productSlug, onBack, onProductSelect }: ProductVie
       formatPrice(estimatedPrice),
     );
 
-    window.open(`https://wa.me/${settings.whatsappNumber}?text=${message}`, '_blank');
+    const prefix = settings.whatsappDefaultMessage ? `${settings.whatsappDefaultMessage}\n\n` : '';
+    const finalMessage = encodeURIComponent(prefix) + message;
+    window.open(`https://wa.me/${settings.whatsappNumber}?text=${finalMessage}`, '_blank');
   };
 
   return (

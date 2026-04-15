@@ -8,13 +8,19 @@ interface FooterProps {
 }
 
 const defaultSettings: SiteSettings = {
+  siteName: 'CORPI & Cia',
+  logoUrl: '',
   whatsappNumber: '595992588770',
+  whatsappDefaultMessage: 'Hola Corpi & Cia, quiero solicitar un presupuesto.',
   phone: '+595 992 588 770',
   email: 'info@corpicia.com',
   city: 'Asunción, Paraguay',
+  address: 'Asunción, Paraguay',
   facebookUrl: 'https://facebook.com/corpi.jardin',
   instagramUrl: 'https://instagram.com/corpi_y_ciaa',
   freeShippingThreshold: 500000,
+  promoGeneral: '🚚 Envío gratis en compras mayores a Gs. 500.000',
+  reusableTexts: {},
   locale: 'es-PY',
   currency: 'PYG',
 };
@@ -52,8 +58,7 @@ export function Footer({ onViewChange }: FooterProps) {
                 <Leaf className="w-6 h-6 text-white" />
               </div>
               <div className="flex flex-col items-start">
-                <span className="text-xl font-bold">CORPI</span>
-                <span className="text-xs text-green-400 -mt-1">& Cía</span>
+                <span className="text-xl font-bold">{settings.siteName}</span>
               </div>
             </button>
             <p className="text-gray-400 text-sm mb-6">
@@ -111,7 +116,7 @@ export function Footer({ onViewChange }: FooterProps) {
               </li>
               <li className="flex items-start gap-3">
                 <MapPin className="w-5 h-5 text-green-500 flex-shrink-0 mt-0.5" />
-                <div><p className="text-sm text-gray-300">{settings.city}</p></div>
+                <div><p className="text-sm text-gray-300">{settings.address || settings.city}</p></div>
               </li>
             </ul>
           </div>
