@@ -34,6 +34,22 @@ const mapProduct = (row: ProductRow, categorySlugById: Record<string, string>): 
 
 const isSupabaseReady = () => supabaseConfig.enabled;
 
+interface ProductsAdminPageFilters {
+  categoryId?: string;
+  search?: string;
+}
+
+interface ProductsAdminPageOptions {
+  limit: number;
+  offset: number;
+  filters?: ProductsAdminPageFilters;
+}
+
+interface ProductsAdminPageResult {
+  items: ProductRow[];
+  total: number;
+}
+
 export const catalogDataService = {
   clearCache() {
     productsCache = null;
@@ -134,6 +150,46 @@ export const catalogDataService = {
         order: 'created_at.desc',
       },
     });
+  },
+
+  async getProductsAdminPage({
+    limit,
+    offset,
+    filters,
+  }: ProductsAdminPageOptions): Promise<ProductsAdminPageResult> {
+    const baseFilters: Record<string, string> = {};
+
+    if (filters?.categoryId) {
+      baseFilters.category_id = `eq.${filters.categoryId}`;
+    }
+
+    if (filters?.search?.trim()) {
+      baseFilters.name = `ilike.*${filters.search.trim()}*`;
+    }
+
+    const items = await supabaseRest<ProductRow[]>('products', {
+      useAuth: true,
+      query: {
+        select: 'id,category_id,slug,name,description,price,original_price,image_url,rating,reviews,in_stock,badge,features,unit,min_quantity,active',
+        order: 'created_at.desc',
+        limit: String(limit),
+        offset: String(offset),
+        ...baseFilters,
+      },
+    });
+
+    const totalRows = await supabaseRest<Array<{ id: string }>>('products', {
+      useAuth: true,
+      query: {
+        select: 'id',
+        ...baseFilters,
+      },
+    });
+
+    return {
+      items,
+      total: totalRows.length,
+    };
   },
 
   async createProduct(payload: {

@@ -1,9 +1,6 @@
 import { createClient } from '@supabase/supabase-js';
 import { env, hasSupabaseEnv, supabaseEnvError } from '@/config/env';
 
-const ACCESS_TOKEN_KEY = 'sb_access_token';
-const REFRESH_TOKEN_KEY = 'sb_refresh_token';
-
 export interface SupabaseClientConfig {
   url: string;
   anonKey: string;
@@ -21,7 +18,14 @@ export const supabaseConfig: SupabaseClientConfig = {
 //
 export const supabase = createClient(
   supabaseConfig.url,
-  supabaseConfig.anonKey
+  supabaseConfig.anonKey,
+  {
+    auth: {
+      persistSession: true,
+      autoRefreshToken: true,
+      detectSessionInUrl: true,
+    },
+  }
 );
 
 interface SupabaseRequestOptions {
@@ -35,23 +39,6 @@ const buildQueryString = (query?: Record<string, string>) => {
   if (!query) return '';
   const params = new URLSearchParams(query);
   return params.toString() ? `?${params.toString()}` : '';
-};
-
-export const supabaseSession = {
-  getAccessToken() {
-    return window.localStorage.getItem(ACCESS_TOKEN_KEY);
-  },
-  getRefreshToken() {
-    return window.localStorage.getItem(REFRESH_TOKEN_KEY);
-  },
-  setSession(accessToken: string, refreshToken: string) {
-    window.localStorage.setItem(ACCESS_TOKEN_KEY, accessToken);
-    window.localStorage.setItem(REFRESH_TOKEN_KEY, refreshToken);
-  },
-  clearSession() {
-    window.localStorage.removeItem(ACCESS_TOKEN_KEY);
-    window.localStorage.removeItem(REFRESH_TOKEN_KEY);
-  },
 };
 
 export async function supabaseRest<T>(
@@ -69,7 +56,9 @@ export async function supabaseRest<T>(
 
   const { method = 'GET', query, body, useAuth = false } = options;
   const queryString = buildQueryString(query);
-  const accessToken = useAuth ? supabaseSession.getAccessToken() : null;
+  const accessToken = useAuth
+    ? (await supabase.auth.getSession()).data.session?.access_token
+    : null;
 
   const response = await fetch(
     `${supabaseConfig.url}/rest/v1/${path}${queryString}`,

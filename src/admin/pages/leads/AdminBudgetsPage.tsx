@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { leadsService } from '@/domains/leads/services/leads.service';
 import type { BudgetRequest, BudgetStatus } from '@/domains/leads/types/leads.types';
+import { toast } from 'sonner';
 
 const statuses: BudgetStatus[] = ['nuevo', 'pendiente', 'atendido', 'cerrado'];
 
@@ -9,8 +10,12 @@ export function AdminBudgetsPage() {
   const [filter, setFilter] = useState<BudgetStatus | ''>('');
 
   const load = async () => {
-    const data = await leadsService.listBudgetRequests(filter || undefined);
-    setItems(data);
+    try {
+      const data = await leadsService.listBudgetRequests(filter || undefined);
+      setItems(data);
+    } catch (e) {
+      toast.error(e instanceof Error ? e.message : 'Error cargando solicitudes');
+    }
   };
 
   useEffect(() => {
@@ -18,8 +23,13 @@ export function AdminBudgetsPage() {
   }, [filter]);
 
   const onChangeStatus = async (id: string, status: BudgetStatus) => {
-    await leadsService.updateBudgetStatus(id, status);
-    await load();
+    try {
+      await leadsService.updateBudgetStatus(id, status);
+      toast.success('Cambios guardados');
+      await load();
+    } catch (e) {
+      toast.error(e instanceof Error ? e.message : 'Error actualizando estado');
+    }
   };
 
   return (

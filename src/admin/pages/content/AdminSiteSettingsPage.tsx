@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
 import { settingsService, type SiteSettings } from '@/domains/settings/services/settings.service';
+import { toast } from 'sonner';
 
 const emptySettings: SiteSettings = {
   siteName: 'CORPI & Cia',
@@ -21,18 +22,25 @@ const emptySettings: SiteSettings = {
 
 export function AdminSiteSettingsPage() {
   const [settings, setSettings] = useState<SiteSettings>(emptySettings);
-  const [saved, setSaved] = useState(false);
 
   useEffect(() => {
-    void settingsService.getSiteSettings().then(setSettings);
+    void settingsService
+      .getSiteSettings()
+      .then(setSettings)
+      .catch((e) => {
+        toast.error(e instanceof Error ? e.message : 'Error cargando settings');
+      });
   }, []);
 
   const onSave = async (e: React.FormEvent) => {
     e.preventDefault();
-    await settingsService.saveSiteSettings(settings);
-    settingsService.clearCache();
-    setSaved(true);
-    setTimeout(() => setSaved(false), 1500);
+    try {
+      await settingsService.saveSiteSettings(settings);
+      settingsService.clearCache();
+      toast.success('Cambios guardados');
+    } catch (e) {
+      toast.error(e instanceof Error ? e.message : 'Error guardando settings');
+    }
   };
 
   return (
@@ -61,8 +69,6 @@ export function AdminSiteSettingsPage() {
 
         <button type="submit" className="rounded bg-slate-900 px-4 py-2 text-white md:col-span-2">Guardar settings</button>
       </form>
-
-      {saved && <div className="rounded border border-green-200 bg-green-50 px-4 py-2 text-sm text-green-700">Configuración guardada.</div>}
     </section>
   );
 }
