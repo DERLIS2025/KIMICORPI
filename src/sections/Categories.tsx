@@ -1,6 +1,6 @@
 import { useRef, useEffect, useState } from 'react';
 import { Leaf, Droplets, Flower2, Gem, Waves, ArrowRight } from 'lucide-react';
-import { categories } from '@/data/products';
+import { useCatalogData } from '@/domains/catalog/hooks/useCatalogData';
 import type { View } from '@/types';
 
 const iconMap: Record<string, React.ElementType> = {
@@ -18,6 +18,7 @@ interface CategoriesProps {
 export function Categories({ onViewChange }: CategoriesProps) {
   const sectionRef = useRef<HTMLDivElement>(null);
   const [isVisible, setIsVisible] = useState(false);
+  const { categories } = useCatalogData();
 
   useEffect(() => {
     const observer = new IntersectionObserver(
@@ -27,7 +28,7 @@ export function Categories({ onViewChange }: CategoriesProps) {
           observer.disconnect();
         }
       },
-      { threshold: 0.2 }
+      { threshold: 0.2 },
     );
 
     if (sectionRef.current) {
@@ -41,9 +42,7 @@ export function Categories({ onViewChange }: CategoriesProps) {
     <section ref={sectionRef} className="py-16 bg-gray-50">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className={`text-center mb-12 transition-all duration-700 ${isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'}`}>
-          <h2 className="text-3xl sm:text-4xl font-bold text-gray-900 mb-4">
-            Explora por categoría
-          </h2>
+          <h2 className="text-3xl sm:text-4xl font-bold text-gray-900 mb-4">Explora por categoría</h2>
           <p className="text-lg text-gray-600 max-w-2xl mx-auto">
             Encuentra todo lo que necesitas para crear y mantener el jardín de tus sueños
           </p>
@@ -52,7 +51,7 @@ export function Categories({ onViewChange }: CategoriesProps) {
         <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4">
           {categories.map((category, index) => {
             const IconComponent = iconMap[category.icon];
-            
+
             return (
               <button
                 key={category.id}
@@ -65,14 +64,10 @@ export function Categories({ onViewChange }: CategoriesProps) {
                 <div className="w-14 h-14 mx-auto mb-4 bg-[#0066b3]/10 rounded-xl flex items-center justify-center group-hover:bg-[#0066b3] transition-colors">
                   {IconComponent && <IconComponent className="w-7 h-7 text-[#0066b3] group-hover:text-white transition-colors" />}
                 </div>
-                
-                <h3 className="font-semibold text-gray-900 mb-1 group-hover:text-[#0066b3] transition-colors">
-                  {category.name}
-                </h3>
-                
-                <p className="text-sm text-gray-500 line-clamp-2">
-                  {category.description}
-                </p>
+
+                <h3 className="font-semibold text-gray-900 mb-1 group-hover:text-[#0066b3] transition-colors">{category.name}</h3>
+
+                <p className="text-sm text-gray-500 line-clamp-2">{category.description}</p>
 
                 <div className="mt-4 flex items-center justify-center gap-1 text-[#0066b3] opacity-0 group-hover:opacity-100 transition-opacity">
                   <span className="text-sm font-medium">Ver productos</span>
