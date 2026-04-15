@@ -1,3 +1,4 @@
+import { createClient } from '@supabase/supabase-js';
 import { env, hasSupabaseEnv, supabaseEnvError } from '@/config/env';
 
 const ACCESS_TOKEN_KEY = 'sb_access_token';
@@ -14,6 +15,14 @@ export const supabaseConfig: SupabaseClientConfig = {
   anonKey: env.supabaseAnonKey ?? '',
   enabled: hasSupabaseEnv,
 };
+
+//
+// 🔥 CLIENTE OFICIAL DE SUPABASE (PARA STORAGE)
+//
+export const supabase = createClient(
+  supabaseConfig.url,
+  supabaseConfig.anonKey
+);
 
 interface SupabaseRequestOptions {
   method?: 'GET' | 'POST' | 'PATCH' | 'DELETE';
@@ -45,10 +54,16 @@ export const supabaseSession = {
   },
 };
 
-export async function supabaseRest<T>(path: string, options: SupabaseRequestOptions = {}): Promise<T> {
+export async function supabaseRest<T>(
+  path: string,
+  options: SupabaseRequestOptions = {}
+): Promise<T> {
   if (!supabaseConfig.enabled) {
     throw new Error(
-      `Supabase no está configurado. ${supabaseEnvError ?? 'Definí VITE_SUPABASE_URL y VITE_SUPABASE_ANON_KEY.'}`,
+      `Supabase no está configurado. ${
+        supabaseEnvError ??
+        'Definí VITE_SUPABASE_URL y VITE_SUPABASE_ANON_KEY.'
+      }`
     );
   }
 
@@ -56,20 +71,25 @@ export async function supabaseRest<T>(path: string, options: SupabaseRequestOpti
   const queryString = buildQueryString(query);
   const accessToken = useAuth ? supabaseSession.getAccessToken() : null;
 
-  const response = await fetch(`${supabaseConfig.url}/rest/v1/${path}${queryString}`, {
-    method,
-    headers: {
-      apikey: supabaseConfig.anonKey,
-      Authorization: `Bearer ${accessToken || supabaseConfig.anonKey}`,
-      'Content-Type': 'application/json',
-      Prefer: 'return=representation',
-    },
-    body: body ? JSON.stringify(body) : undefined,
-  });
+  const response = await fetch(
+    `${supabaseConfig.url}/rest/v1/${path}${queryString}`,
+    {
+      method,
+      headers: {
+        apikey: supabaseConfig.anonKey,
+        Authorization: `Bearer ${accessToken || supabaseConfig.anonKey}`,
+        'Content-Type': 'application/json',
+        Prefer: 'return=representation',
+      },
+      body: body ? JSON.stringify(body) : undefined,
+    }
+  );
 
   if (!response.ok) {
     const errorText = await response.text();
-    throw new Error(`Supabase request failed (${response.status}): ${errorText}`);
+    throw new Error(
+      `Supabase request failed (${response.status}): ${errorText}`
+    );
   }
 
   if (response.status === 204) {
