@@ -39,7 +39,9 @@ export const adminAuthService = {
 
   async login(email: string, password: string): Promise<void> {
     if (!supabaseConfig.enabled) {
-      throw new Error(`Supabase no está configurado para login. ${supabaseEnvError ?? 'Revisá VITE_SUPABASE_URL y VITE_SUPABASE_ANON_KEY.'}`);
+      throw new Error(
+        `Supabase no está configurado para login. ${supabaseEnvError ?? 'Revisá VITE_SUPABASE_URL y VITE_SUPABASE_ANON_KEY.'}`,
+      );
     }
 
     const authUrl = `${supabaseConfig.url}/auth/v1/token?grant_type=password`;
