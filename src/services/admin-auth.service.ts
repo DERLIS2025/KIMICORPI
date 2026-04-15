@@ -1,4 +1,5 @@
 import { supabaseConfig, supabaseSession } from '@/integrations/supabase/client';
+import { supabaseEnvError } from '@/config/env';
 
 const ADMIN_USER_KEY = 'admin_user';
 
@@ -38,10 +39,14 @@ export const adminAuthService = {
 
   async login(email: string, password: string): Promise<void> {
     if (!supabaseConfig.enabled) {
-      throw new Error('Supabase no está configurado. Revisá VITE_SUPABASE_URL y VITE_SUPABASE_ANON_KEY.');
+      throw new Error(
+        `Supabase no está configurado para login. ${supabaseEnvError ?? 'Revisá VITE_SUPABASE_URL y VITE_SUPABASE_ANON_KEY.'}`,
+      );
     }
 
-    const response = await fetch(`${supabaseConfig.url}/auth/v1/token?grant_type=password`, {
+    const authUrl = `${supabaseConfig.url}/auth/v1/token?grant_type=password`;
+
+    const response = await fetch(authUrl, {
       method: 'POST',
       headers: {
         apikey: supabaseConfig.anonKey,
@@ -52,7 +57,7 @@ export const adminAuthService = {
 
     if (!response.ok) {
       const detail = await response.text();
-      throw new Error(`No se pudo iniciar sesión: ${detail}`);
+      throw new Error(`No se pudo iniciar sesión contra ${authUrl}: ${detail}`);
     }
 
     const data = (await response.json()) as SupabaseAuthResponse;

@@ -1,4 +1,4 @@
-import { env, hasSupabaseEnv } from '@/config/env';
+import { env, hasSupabaseEnv, supabaseEnvError } from '@/config/env';
 
 const ACCESS_TOKEN_KEY = 'sb_access_token';
 const REFRESH_TOKEN_KEY = 'sb_refresh_token';
@@ -10,8 +10,8 @@ export interface SupabaseClientConfig {
 }
 
 export const supabaseConfig: SupabaseClientConfig = {
-  url: env.supabaseUrl,
-  anonKey: env.supabaseAnonKey,
+  url: env.supabaseUrl ?? '',
+  anonKey: env.supabaseAnonKey ?? '',
   enabled: hasSupabaseEnv,
 };
 
@@ -47,7 +47,9 @@ export const supabaseSession = {
 
 export async function supabaseRest<T>(path: string, options: SupabaseRequestOptions = {}): Promise<T> {
   if (!supabaseConfig.enabled) {
-    throw new Error('Supabase no está configurado. Definí VITE_SUPABASE_URL y VITE_SUPABASE_ANON_KEY.');
+    throw new Error(
+      `Supabase no está configurado. ${supabaseEnvError ?? 'Definí VITE_SUPABASE_URL y VITE_SUPABASE_ANON_KEY.'}`,
+    );
   }
 
   const { method = 'GET', query, body, useAuth = false } = options;
