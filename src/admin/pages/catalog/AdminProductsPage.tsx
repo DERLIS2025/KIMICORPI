@@ -32,6 +32,7 @@ export function AdminProductsPage() {
       ]);
       setCategories(categoriesRes);
       setItems(productsRes);
+
       if (!form.category_id && categoriesRes[0]) {
         setForm((prev) => ({ ...prev, category_id: categoriesRes[0].id }));
       }
@@ -52,7 +53,7 @@ export function AdminProductsPage() {
     try {
       let imageUrl = '';
 
-      // 🔥 subir imagen a supabase
+      // 🔥 subir imagen automáticamente
       if (imageFile) {
         const fileName = `${Date.now()}-${imageFile.name}`;
 
@@ -62,11 +63,11 @@ export function AdminProductsPage() {
 
         if (uploadError) throw uploadError;
 
-        const { data: publicUrl } = supabase.storage
+        const { data } = supabase.storage
           .from('images')
           .getPublicUrl(fileName);
 
-        imageUrl = publicUrl.publicUrl;
+        imageUrl = data.publicUrl;
       }
 
       await catalogDataService.createProduct({
@@ -74,7 +75,11 @@ export function AdminProductsPage() {
         image_url: imageUrl,
       });
 
-      setForm((prev) => ({ ...initialForm, category_id: prev.category_id }));
+      setForm((prev) => ({
+        ...initialForm,
+        category_id: prev.category_id,
+      }));
+
       setImageFile(null);
 
       await load();
@@ -164,7 +169,7 @@ export function AdminProductsPage() {
           className="rounded border px-3 py-2 md:col-span-2"
         />
 
-        {/* 🔥 NUEVO INPUT DE IMAGEN */}
+        {/* 🔥 SOLO SUBIR IMAGEN DESDE PC */}
         <input
           type="file"
           accept="image/*"
