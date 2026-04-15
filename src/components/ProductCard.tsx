@@ -1,7 +1,8 @@
 import { useState } from 'react';
 import { Plus, Minus, Check, Calculator } from 'lucide-react';
-import { useBudget } from '@/store/BudgetContext';
-import { formatPrice, getUnitLabel } from '@/data/products';
+import { useBudget } from '@/providers/BudgetProvider';
+import { formatPrice } from '@/domains/catalog/utils/price';
+import { getStepByUnit, getUnitLabel } from '@/domains/catalog/utils/unit';
 import type { ProductWithUnit } from '@/data/products';
 
 interface ProductCardProps {
@@ -79,7 +80,7 @@ export function ProductCard({ product, onClick, variant = 'default' }: ProductCa
               <button
                 onClick={(e) => {
                   e.stopPropagation();
-                  setQuantity(Math.max(product.minQuantity, quantity - (product.unit === 'm2' ? 5 : 1)));
+                  setQuantity(Math.max(product.minQuantity, quantity - getStepByUnit(product.unit)));
                 }}
                 className="p-2 hover:bg-gray-100 transition-colors"
               >
@@ -91,7 +92,7 @@ export function ProductCard({ product, onClick, variant = 'default' }: ProductCa
               <button
                 onClick={(e) => {
                   e.stopPropagation();
-                  setQuantity(quantity + (product.unit === 'm2' ? 5 : 1));
+                  setQuantity(quantity + getStepByUnit(product.unit));
                 }}
                 className="p-2 hover:bg-gray-100 transition-colors"
               >
