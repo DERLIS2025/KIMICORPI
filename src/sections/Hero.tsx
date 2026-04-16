@@ -6,6 +6,8 @@ import type { HeroSlide } from '@/domains/marketing/types/marketing.types';
 
 interface HeroProps {
   onViewChange: (view: View) => void;
+  titleOverride?: string;
+  subtitleOverride?: string;
 }
 
 const featureCards = [
@@ -14,7 +16,7 @@ const featureCards = [
   { icon: Flower2, title: 'Plantas Saludables', desc: 'Selección curada' },
 ];
 
-export function Hero({ onViewChange }: HeroProps) {
+export function Hero({ onViewChange, titleOverride, subtitleOverride }: HeroProps) {
   const [slides, setSlides] = useState<HeroSlide[]>([]);
   const [currentSlide, setCurrentSlide] = useState(0);
   const [isAnimating, setIsAnimating] = useState(false);
@@ -68,9 +70,9 @@ export function Hero({ onViewChange }: HeroProps) {
                 <div className="inline-flex items-center gap-2 px-3 py-1.5 bg-green-100 text-green-800 rounded-full shadow-sm mb-4 text-sm font-medium">{slide.badge}</div>
               )}
 
-              <h1 className="text-4xl sm:text-5xl lg:text-6xl font-bold text-gray-900 mb-2">{slide.title}</h1>
+              <h1 className="text-4xl sm:text-5xl lg:text-6xl font-bold text-gray-900 mb-2">{titleOverride || slide.title}</h1>
               <p className={`text-2xl sm:text-3xl lg:text-4xl font-bold bg-gradient-to-r ${slide.color} bg-clip-text text-transparent mb-6`}>
-                {slide.subtitle}
+                {subtitleOverride || slide.subtitle}
               </p>
 
               <p className="text-lg text-gray-600 mb-8 max-w-md">{slide.description}</p>

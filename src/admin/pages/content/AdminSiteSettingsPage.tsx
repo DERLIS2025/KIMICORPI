@@ -20,6 +20,37 @@ const emptySettings: SiteSettings = {
   currency: 'PYG',
 };
 
+interface DynamicSectionConfig {
+  id: string;
+  title: string;
+  enabled: boolean;
+}
+
+const fallbackDynamicSections: DynamicSectionConfig[] = [
+  { id: 'featured-products', title: 'Productos destacados', enabled: true },
+  { id: 'categories', title: 'Categorías', enabled: true },
+  { id: 'benefits', title: 'Beneficios', enabled: true },
+];
+
+const parseDynamicSections = (value: unknown): DynamicSectionConfig[] => {
+  if (!Array.isArray(value)) return fallbackDynamicSections;
+
+  const parsed = value
+    .map((item) => {
+      if (!item || typeof item !== 'object') return null;
+      const candidate = item as Partial<DynamicSectionConfig>;
+      if (!candidate.id || !candidate.title) return null;
+      return {
+        id: String(candidate.id),
+        title: String(candidate.title),
+        enabled: Boolean(candidate.enabled),
+      };
+    })
+    .filter(Boolean) as DynamicSectionConfig[];
+
+  return parsed.length > 0 ? parsed : fallbackDynamicSections;
+};
+
 export function AdminSiteSettingsPage() {
   const [settings, setSettings] = useState<SiteSettings>(emptySettings);
 
@@ -31,6 +62,18 @@ export function AdminSiteSettingsPage() {
         toast.error(e instanceof Error ? e.message : 'Error cargando settings');
       });
   }, []);
+
+  const updateReusableText = (key: string, value: unknown) => {
+    setSettings((prev) => ({
+      ...prev,
+      reusableTexts: {
+        ...prev.reusableTexts,
+        [key]: value,
+      },
+    }));
+  };
+
+  const dynamicSections = parseDynamicSections(settings.reusableTexts.dynamicSections);
 
   const onSave = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -63,9 +106,105 @@ export function AdminSiteSettingsPage() {
         <input value={settings.instagramUrl} onChange={(e) => setSettings((p) => ({ ...p, instagramUrl: e.target.value }))} placeholder="Instagram URL" className="rounded border px-3 py-2" />
         <input type="number" value={settings.freeShippingThreshold} onChange={(e) => setSettings((p) => ({ ...p, freeShippingThreshold: Number(e.target.value) }))} placeholder="Promo threshold" className="rounded border px-3 py-2" />
         <input value={settings.promoGeneral} onChange={(e) => setSettings((p) => ({ ...p, promoGeneral: e.target.value }))} placeholder="Promo general" className="rounded border px-3 py-2" />
-        <textarea value={JSON.stringify(settings.reusableTexts)} onChange={(e) => {
+        <section className="space-y-3 rounded-lg border p-3 md:col-span-2">
+          <h2 className="text-sm font-semibold uppercase tracking-wide text-slate-500">Hero editable</h2>
+          <div className="grid gap-3 md:grid-cols-2">
+            <input
+              value={String(settings.reusableTexts.heroTitle || '')}
+              onChange={(e) => updateReusableText('heroTitle', e.target.value)}
+              placeholder="Título principal del hero"
+              className="rounded border px-3 py-2"
+            />
+            <input
+              value={String(settings.reusableTexts.heroSubtitle || '')}
+              onChange={(e) => updateReusableText('heroSubtitle', e.target.value)}
+              placeholder="Subtítulo del hero"
+              className="rounded border px-3 py-2"
+            />
+          </div>
+        </section>
+
+        <section className="space-y-3 rounded-lg border p-3 md:col-span-2">
+          <h2 className="text-sm font-semibold uppercase tracking-wide text-slate-500">Banners</h2>
+          <div className="grid gap-3 md:grid-cols-2">
+            <input
+              value={String(settings.reusableTexts.homeBannerTitle || '')}
+              onChange={(e) => updateReusableText('homeBannerTitle', e.target.value)}
+              placeholder="Título del banner principal"
+              className="rounded border px-3 py-2"
+            />
+            <input
+              value={String(settings.reusableTexts.homeBannerCta || '')}
+              onChange={(e) => updateReusableText('homeBannerCta', e.target.value)}
+              placeholder="Texto CTA del banner"
+              className="rounded border px-3 py-2"
+            />
+            <input
+              value={String(settings.reusableTexts.homeBannerSecondaryTitle || '')}
+              onChange={(e) => updateReusableText('homeBannerSecondaryTitle', e.target.value)}
+              placeholder="Título del banner secundario"
+              className="rounded border px-3 py-2 md:col-span-2"
+            />
+          </div>
+        </section>
+
+        <section className="space-y-3 rounded-lg border p-3 md:col-span-2">
+          <h2 className="text-sm font-semibold uppercase tracking-wide text-slate-500">Secciones dinámicas de home</h2>
+          <div className="space-y-2">
+            {dynamicSections.map((section, index) => (
+              <div key={section.id} className="grid gap-2 rounded border p-2 md:grid-cols-[1fr_1fr_auto]">
+                <input
+                  value={section.id}
+                  onChange={(e) => {
+                    const next = [...dynamicSections];
+                    next[index] = { ...next[index], id: e.target.value };
+                    updateReusableText('dynamicSections', next);
+                  }}
+                  className="rounded border px-3 py-2"
+                  placeholder="id-seccion"
+                />
+                <input
+                  value={section.title}
+                  onChange={(e) => {
+                    const next = [...dynamicSections];
+                    next[index] = { ...next[index], title: e.target.value };
+                    updateReusableText('dynamicSections', next);
+                  }}
+                  className="rounded border px-3 py-2"
+                  placeholder="Título visible"
+                />
+                <label className="flex items-center gap-2 rounded border px-3 py-2 text-sm">
+                  <input
+                    type="checkbox"
+                    checked={section.enabled}
+                    onChange={(e) => {
+                      const next = [...dynamicSections];
+                      next[index] = { ...next[index], enabled: e.target.checked };
+                      updateReusableText('dynamicSections', next);
+                    }}
+                  />
+                  Activa
+                </label>
+              </div>
+            ))}
+            <button
+              type="button"
+              onClick={() =>
+                updateReusableText('dynamicSections', [
+                  ...dynamicSections,
+                  { id: `seccion-${dynamicSections.length + 1}`, title: 'Nueva sección', enabled: true },
+                ])
+              }
+              className="rounded border px-3 py-2 text-sm text-slate-700"
+            >
+              Agregar sección
+            </button>
+          </div>
+        </section>
+
+        <textarea value={JSON.stringify(settings.reusableTexts, null, 2)} onChange={(e) => {
           try { setSettings((p) => ({ ...p, reusableTexts: JSON.parse(e.target.value || '{}') })); } catch { /* ignore */ }
-        }} className="rounded border px-3 py-2 md:col-span-2" rows={4} placeholder='Textos globales reutilizables (JSON)' />
+        }} className="rounded border px-3 py-2 md:col-span-2" rows={6} placeholder='Editor avanzado de textos reutilizables (JSON)' />
 
         <button type="submit" className="rounded bg-slate-900 px-4 py-2 text-white md:col-span-2">Guardar settings</button>
       </form>
