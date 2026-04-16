@@ -8,9 +8,18 @@ import type { View } from '@/types';
 interface FeaturedProductsProps {
   onViewChange: (view: View) => void;
   onProductSelect: (productSlug: string) => void;
+  sectionTitle?: string;
+  sectionDescription?: string;
+  sectionCta?: string;
 }
 
-export function FeaturedProducts({ onViewChange, onProductSelect }: FeaturedProductsProps) {
+export function FeaturedProducts({
+  onViewChange,
+  onProductSelect,
+  sectionTitle,
+  sectionDescription,
+  sectionCta,
+}: FeaturedProductsProps) {
   const { products } = useCatalogData();
   const featuredProducts = catalogService.getFeaturedProducts(products);
 
@@ -22,15 +31,15 @@ export function FeaturedProducts({ onViewChange, onProductSelect }: FeaturedProd
             <span className="inline-block px-3 py-1 bg-red-100 text-red-600 text-sm font-medium rounded-full mb-3">
               Ofertas especiales
             </span>
-            <h2 className="text-3xl sm:text-4xl font-bold text-gray-900">Los más vendidos</h2>
-            <p className="text-gray-600 mt-2 max-w-xl">Productos destacados con los mejores precios y calidad garantizada</p>
+            <h2 className="text-3xl sm:text-4xl font-bold text-gray-900">{sectionTitle || 'Los más vendidos'}</h2>
+            <p className="text-gray-600 mt-2 max-w-xl">{sectionDescription || 'Productos destacados con los mejores precios y calidad garantizada'}</p>
           </div>
           <Button
             onClick={() => onViewChange('catalog')}
             variant="outline"
             className="mt-4 sm:mt-0 border-[#0066b3] text-[#0066b3] hover:bg-[#0066b3] hover:text-white"
           >
-            Ver todos
+            {sectionCta || 'Ver todos'}
             <ArrowRight className="w-4 h-4 ml-2" />
           </Button>
         </div>
